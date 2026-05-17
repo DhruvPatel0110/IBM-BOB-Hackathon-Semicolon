@@ -80,7 +80,7 @@ const LoginPage = () => {
             <Sparkles className="w-12 h-12 text-white" />
           </motion.div>
           <h1 className="text-4xl font-bold text-gradient mb-2">
-            AI Meeting Intelligence
+            MeetIQ
           </h1>
           <p className="text-text-secondary">
             Transform your meetings into actionable insights
@@ -254,5 +254,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-
-// Made with Bob

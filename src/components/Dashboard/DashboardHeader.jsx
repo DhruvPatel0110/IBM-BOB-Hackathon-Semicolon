@@ -35,7 +35,7 @@ const DashboardHeader = ({ transcript, summary, actionItems, onLoadTranscript })
               </motion.div>
               <div>
                 <h1 className="text-2xl font-bold text-text-primary">
-                  AI Transcription Dashboard
+                  MeetIQ
                 </h1>
                 <p className="text-sm text-text-muted">
                   Powered by IBM Watson & Advanced AI
@@ -96,5 +96,3 @@ const DashboardHeader = ({ transcript, summary, actionItems, onLoadTranscript })
 };
 
 export default DashboardHeader;
-
-// Made with Bob

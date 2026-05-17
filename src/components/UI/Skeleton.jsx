@@ -36,5 +36,3 @@ export const SkeletonTranscript = () => (
 );
 
 export default Skeleton;
-
-// Made with Bob

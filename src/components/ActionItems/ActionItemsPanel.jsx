@@ -188,5 +188,3 @@ const ActionItemsPanel = ({ actionItems: initialItems, isLoading = false }) => {
 };
 
 export default ActionItemsPanel;
-
-// Made with Bob

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the implementation of a **Retrieval-Augmented Generation (RAG)** pipeline for the AI Transcription Dashboard. The system allows users to ask questions about their meeting transcripts without re-uploading files, with full conversation history storage.
+This document describes the implementation of a **Retrieval-Augmented Generation (RAG)** pipeline for MeetIQ. The system allows users to ask questions about their meeting transcripts without re-uploading files, with full conversation history storage.
 
 ## Architecture
 

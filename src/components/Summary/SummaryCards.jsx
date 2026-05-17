@@ -154,5 +154,3 @@ const SummaryCards = ({ summary, isLoading = false }) => {
 };
 
 export default SummaryCards;
-
-// Made with Bob

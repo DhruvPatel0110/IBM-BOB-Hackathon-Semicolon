@@ -110,5 +110,3 @@ export const sampleActionItems = [
     dueDate: "2024-06-01"
   }
 ];
-
-// Made with Bob

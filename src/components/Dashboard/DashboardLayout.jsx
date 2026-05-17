@@ -232,5 +232,3 @@ const DashboardLayout = () => {
 };
 
 export default DashboardLayout;
-
-// Made with Bob

@@ -187,5 +187,3 @@ const AudioUpload = ({ onFileUpload }) => {
 };
 
 export default AudioUpload;
-
-// Made with Bob

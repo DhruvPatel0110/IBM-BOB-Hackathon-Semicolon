@@ -169,7 +169,7 @@ export const exportAsJSON = (transcript, summary, actionItems) => {
 };
 
 export const exportAsMarkdown = (transcript, summary, actionItems) => {
-  let content = `# AI Transcription Export
+  let content = `# MeetIQ Export
 
 `;
 
@@ -217,5 +217,3 @@ ${actionItems.map((item, idx) => `${idx + 1}. [${item.completed ? 'x' : ' '}] ${
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
-
-// Made with Bob

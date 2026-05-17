@@ -136,5 +136,3 @@ export const clearSummaryCache = () => {
   summaryCache.clear();
   console.log('Summary cache cleared');
 };
-
-// Made with Bob

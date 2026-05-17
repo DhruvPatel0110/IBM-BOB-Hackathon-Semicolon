@@ -172,5 +172,3 @@ const ExportButton = ({ transcript, summary, actionItems }) => {
 };
 
 export default ExportButton;
-
-// Made with Bob

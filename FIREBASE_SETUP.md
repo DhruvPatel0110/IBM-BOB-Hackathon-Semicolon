@@ -364,4 +364,3 @@ users/
 
 ---
 
-**Made with Bob** 🤖

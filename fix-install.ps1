@@ -28,5 +28,3 @@ npm install
 
 Write-Host "`nInstallation complete!" -ForegroundColor Green
 Write-Host "You can now run: npm run dev" -ForegroundColor Cyan
-
-# Made with Bob

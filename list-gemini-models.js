@@ -37,5 +37,3 @@ async function listModels() {
 }
 
 listModels();
-
-// Made with Bob

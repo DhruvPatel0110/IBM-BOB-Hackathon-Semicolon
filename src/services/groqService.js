@@ -162,5 +162,3 @@ Use these priorities: high, medium, low`;
     };
   }
 };
-
-// Made with Bob

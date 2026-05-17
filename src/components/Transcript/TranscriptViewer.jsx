@@ -135,5 +135,3 @@ const TranscriptViewer = ({ transcript, isLoading = false }) => {
 };
 
 export default TranscriptViewer;
-
-// Made with Bob
