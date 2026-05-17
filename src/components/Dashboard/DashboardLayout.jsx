@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare } from 'lucide-react';
 import DashboardHeader from './DashboardHeader';
 import AudioUpload from '../Upload/AudioUpload';
 import TranscriptViewer from '../Transcript/TranscriptViewer';
 import SummaryCards from '../Summary/SummaryCards';
-import ChatInterface from '../Chatbot/ChatInterface';
 import { transcribeAudio, formatDuration, countWords, generateSummaryAndActions } from '../../services/groqService';
 import { saveTranscript } from '../../services/firestoreService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -28,7 +26,6 @@ const DashboardLayout = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showChatbot, setShowChatbot] = useState(false);
 
   const handleFileUpload = async (file) => {
     setUploadedFile(file);
@@ -178,45 +175,10 @@ const DashboardLayout = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="w-full"
           >
-            {/* Toggle Button (if transcript exists) */}
-            {transcript && transcriptId && (
-              <div className="flex gap-2 mb-6">
-                <button
-                  onClick={() => setShowChatbot(false)}
-                  className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all text-sm ${
-                    !showChatbot
-                      ? 'bg-primary-hover text-white border border-accent-cyan/40'
-                      : 'bg-primary-surface/50 text-text-muted hover:bg-primary-hover/50 border border-transparent'
-                  }`}
-                >
-                  Summary
-                </button>
-                <button
-                  onClick={() => setShowChatbot(true)}
-                  className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2 text-sm ${
-                    showChatbot
-                      ? 'bg-primary-hover text-white border border-accent-cyan/40'
-                      : 'bg-primary-surface/50 text-text-muted hover:bg-primary-hover/50 border border-transparent'
-                  }`}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Q&A Chat
-                </button>
-              </div>
-            )}
-
-            {/* AI Summary / Chatbot */}
-            {showChatbot && transcript && transcriptId ? (
-              <ChatInterface
-                transcript={transcript.text}
-                transcriptId={transcriptId}
-              />
-            ) : (
-              <SummaryCards
-                summary={summary}
-                isLoading={isLoading}
-              />
-            )}
+            <SummaryCards
+              summary={summary}
+              isLoading={isLoading}
+            />
           </motion.section>
 
         </div>

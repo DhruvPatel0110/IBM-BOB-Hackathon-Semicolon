@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, LogIn, CheckSquare } from 'lucide-react';
+import { Sparkles, LogIn, CheckSquare, MessageSquare } from 'lucide-react';
 import ExportButton from '../Export/ExportButton';
 import UserMenu from '../Auth/UserMenu';
 import LoginModal from '../Auth/LoginModal';
 import TranscriptHistory from '../History/TranscriptHistory';
 import Button from '../UI/Button';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranscript } from '../../contexts/TranscriptContext';
 
 const DashboardHeader = ({ transcript, summary, actionItems, onLoadTranscript }) => {
   const { isAuthenticated } = useAuth();
+  const { transcript: contextTranscript } = useTranscript();
   const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -45,6 +47,33 @@ const DashboardHeader = ({ transcript, summary, actionItems, onLoadTranscript })
 
             {/* Actions */}
             <div className="flex items-center gap-4">
+              {/* Chat with MeetIQ Button - Only show if transcript exists */}
+              {(transcript || contextTranscript) && (
+                <>
+                  <Button
+                    onClick={() => navigate('/chat')}
+                    variant="primary"
+                    size="sm"
+                    icon={MessageSquare}
+                    className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:opacity-90"
+                  >
+                    Chat with MeetIQ
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (confirm('Clear current transcript? This will remove all data.')) {
+                        localStorage.clear();
+                        window.location.reload();
+                      }
+                    }}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    Clear
+                  </Button>
+                </>
+              )}
+              
               {actionItems && actionItems.length > 0 && (
                 <Button
                   onClick={() => navigate('/actions')}

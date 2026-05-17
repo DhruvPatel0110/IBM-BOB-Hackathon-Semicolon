@@ -1,7 +1,7 @@
 // Embedding Service using Gemini API for text embeddings
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const EMBEDDING_MODEL = 'models/text-embedding-004';
-const EMBEDDING_API_URL = `https://generativelanguage.googleapis.com/v1beta/${EMBEDDING_MODEL}:embedContent?key=${GEMINI_API_KEY}`;
+const EMBEDDING_MODEL = 'text-embedding-004';
+const EMBEDDING_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${GEMINI_API_KEY}`;
 
 /**
  * Generate embeddings for text using Gemini API
