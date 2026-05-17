@@ -8,19 +8,19 @@ export default {
     extend: {
       colors: {
         primary: {
-          bg: '#545454',
-          surface: '#959595',
-          hover: '#7a7a7a',
+          bg: '#0a0a0a',
+          surface: '#1a1a1a',
+          hover: '#252525',
         },
         accent: {
-          cyan: '#FFFFFF',
-          purple: '#FFFFFF',
-          pink: '#FFFFFF',
+          cyan: '#60a5fa',
+          purple: '#a78bfa',
+          pink: '#f472b6',
         },
         text: {
-          primary: '#FFFFFF',
-          secondary: '#e0e0e0',
-          muted: '#c0c0c0',
+          primary: '#ffffff',
+          secondary: '#d1d5db',
+          muted: '#9ca3af',
         },
         status: {
           success: '#10b981',

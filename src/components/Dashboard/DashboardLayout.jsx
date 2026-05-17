@@ -5,24 +5,29 @@ import DashboardHeader from './DashboardHeader';
 import AudioUpload from '../Upload/AudioUpload';
 import TranscriptViewer from '../Transcript/TranscriptViewer';
 import SummaryCards from '../Summary/SummaryCards';
-import ActionItemsPanel from '../ActionItems/ActionItemsPanel';
 import ChatInterface from '../Chatbot/ChatInterface';
-import { transcribeAudio, formatDuration, countWords } from '../../services/groqService';
-import { generateSummaryAndActions } from '../../services/geminiService';
+import { transcribeAudio, formatDuration, countWords, generateSummaryAndActions } from '../../services/groqService';
 import { saveTranscript } from '../../services/firestoreService';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranscript } from '../../contexts/TranscriptContext';
 import { isFirebaseConfigured } from '../../config/firebase';
 
 const DashboardLayout = () => {
   const { user } = useAuth();
+  const {
+    transcript,
+    setTranscript,
+    transcriptId,
+    setTranscriptId,
+    summary,
+    setSummary,
+    actionItems,
+    setActionItems
+  } = useTranscript();
+  
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  const [transcript, setTranscript] = useState(null);
-  const [transcriptId, setTranscriptId] = useState(null);
-  const [summary, setSummary] = useState(null);
-  const [actionItems, setActionItems] = useState(null);
   const [showChatbot, setShowChatbot] = useState(false);
 
   const handleFileUpload = async (file) => {
@@ -50,8 +55,8 @@ const DashboardLayout = () => {
       setTranscript(transcriptData);
       console.log('✅ Transcription complete!');
       
-      // Step 2: Generate summary using Gemini (with caching to save credits)
-      console.log('🤖 Generating summary with Gemini...');
+      // Step 2: Generate summary using Groq (free tier is generous!)
+      console.log('🤖 Generating summary with Groq...');
       const summaryResult = await generateSummaryAndActions(transcriptionResult.text);
       
       // Set summary data
@@ -68,23 +73,30 @@ const DashboardLayout = () => {
       console.log('✅ Summary and action items generated!');
       
       // Step 3: Save to Firestore if user is authenticated and Firebase is configured
-      if (user && isFirebaseConfigured) {
+      if (user && user.uid && isFirebaseConfigured) {
         console.log('💾 Saving transcript to Firestore...');
-        const result = await saveTranscript(user.uid, {
-          ...transcriptData,
-          transcript: transcriptionResult.text,
-          summary: summaryData,
-          actionItems: summaryResult.actionItems,
-        });
-        
-        if (result.success) {
-          console.log('✅ Transcript saved to Firestore!');
-          setTranscriptId(result.id);
-        } else {
-          console.error('❌ Failed to save to Firestore:', result.error);
+        try {
+          const result = await saveTranscript(user.uid, {
+            ...transcriptData,
+            transcript: transcriptionResult.text,
+            summary: summaryData,
+            actionItems: summaryResult.actionItems,
+          });
+          
+          if (result.success) {
+            console.log('✅ Transcript saved to Firestore!');
+            setTranscriptId(result.id);
+          } else {
+            console.error('❌ Failed to save to Firestore:', result.error);
+          }
+        } catch (firestoreError) {
+          console.error('❌ Firestore save error:', firestoreError);
+          // Don't fail the whole process if Firestore fails
         }
       } else if (user && !isFirebaseConfigured) {
         console.warn('⚠️ Firebase not configured. Transcript not saved to cloud.');
+      } else if (!user) {
+        console.log('ℹ️ User not authenticated. Transcript not saved to cloud.');
       }
       
       setIsLoading(false);
@@ -132,71 +144,59 @@ const DashboardLayout = () => {
         onLoadTranscript={handleLoadTranscript}
       />
 
-      <main className="max-w-[1800px] mx-auto px-6 py-8">
-        {/* Main Grid Layout - 4 equal columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-          {/* Left Column - Upload & Action Items (30% width = 3/10) */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* VERTICAL STACK LAYOUT - Full Width Sections */}
+        <div className="flex flex-col gap-8 w-full">
+          
+          {/* SECTION 1 - Upload Audio */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-3 space-y-6"
+            className="w-full"
           >
-            {/* Upload Section - 50% height */}
-            <div className="h-[calc(50vh-80px)] min-h-[350px]">
-              <AudioUpload onFileUpload={handleFileUpload} />
-            </div>
+            <AudioUpload onFileUpload={handleFileUpload} />
+          </motion.section>
 
-            {/* Action Items Panel - 50% height */}
-            <div className="h-[calc(50vh-80px)] min-h-[350px]">
-              <ActionItemsPanel
-                actionItems={actionItems}
-                isLoading={isLoading}
-              />
-            </div>
-          </motion.div>
-
-          {/* Center Column - Transcript (30% width = 3/10, 100% height) */}
-          <motion.div
+          {/* SECTION 2 - Transcript */}
+          <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="lg:col-span-3"
+            className="w-full"
           >
-            <div className="h-[calc(100vh-140px)] min-h-[750px]">
-              <TranscriptViewer
-                transcript={transcript}
-                isLoading={isLoading}
-              />
-            </div>
-          </motion.div>
+            <TranscriptViewer
+              transcript={transcript}
+              isLoading={isLoading}
+            />
+          </motion.section>
 
-          {/* Right Column - Summary or Chatbot (40% width = 4/10, 100% height) */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+          {/* SECTION 3 - AI Summary */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-4"
+            className="w-full"
           >
-            {/* Toggle Button */}
+            {/* Toggle Button (if transcript exists) */}
             {transcript && transcriptId && (
-              <div className="mb-4 flex gap-2">
+              <div className="flex gap-2 mb-6">
                 <button
                   onClick={() => setShowChatbot(false)}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
+                  className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all text-sm ${
                     !showChatbot
-                      ? 'bg-gradient-to-br from-cyan-500/20 to-purple-500/20 text-white border border-cyan-500/30'
-                      : 'bg-gray-800/30 text-gray-400 hover:bg-gray-800/50'
+                      ? 'bg-primary-hover text-white border border-accent-cyan/40'
+                      : 'bg-primary-surface/50 text-text-muted hover:bg-primary-hover/50 border border-transparent'
                   }`}
                 >
                   Summary
                 </button>
                 <button
                   onClick={() => setShowChatbot(true)}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+                  className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2 text-sm ${
                     showChatbot
-                      ? 'bg-gradient-to-br from-cyan-500/20 to-purple-500/20 text-white border border-cyan-500/30'
-                      : 'bg-gray-800/30 text-gray-400 hover:bg-gray-800/50'
+                      ? 'bg-primary-hover text-white border border-accent-cyan/40'
+                      : 'bg-primary-surface/50 text-text-muted hover:bg-primary-hover/50 border border-transparent'
                   }`}
                 >
                   <MessageSquare className="w-4 h-4" />
@@ -205,41 +205,27 @@ const DashboardLayout = () => {
               </div>
             )}
 
-            <div className="h-[calc(100vh-200px)] min-h-[750px] overflow-y-auto scrollbar-thin">
-              {showChatbot && transcript && transcriptId ? (
-                <ChatInterface
-                  transcript={transcript.text}
-                  transcriptId={transcriptId}
-                />
-              ) : (
-                <SummaryCards
-                  summary={summary}
-                  isLoading={isLoading}
-                />
-              )}
-            </div>
-          </motion.div>
-        </div>
+            {/* AI Summary / Chatbot */}
+            {showChatbot && transcript && transcriptId ? (
+              <ChatInterface
+                transcript={transcript.text}
+                transcriptId={transcriptId}
+              />
+            ) : (
+              <SummaryCards
+                summary={summary}
+                isLoading={isLoading}
+              />
+            )}
+          </motion.section>
 
-        {/* Mobile Layout Adjustments */}
-        <style jsx>{`
-          @media (max-width: 1024px) {
-            .grid {
-              grid-template-columns: 1fr;
-            }
-            .lg\\:col-span-3,
-            .lg\\:col-span-5,
-            .lg\\:col-span-4 {
-              grid-column: span 1;
-            }
-          }
-        `}</style>
+        </div>
       </main>
 
-      {/* Background Effects */}
+      {/* Background Effects - Subtle */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-accent-cyan/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent-purple/5 rounded-full blur-3xl" />
       </div>
     </div>
   );

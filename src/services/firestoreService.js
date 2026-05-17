@@ -13,7 +13,14 @@ import {
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db, isFirebaseConfigured } from '../config/firebase';
+
+// Helper to check if Firestore is available
+const checkFirestore = () => {
+  if (!isFirebaseConfigured || !db) {
+    throw new Error('Firebase/Firestore is not configured. Please add Firebase credentials to .env.local');
+  }
+};
 
 // Collections
 const USERS_COLLECTION = 'users';
@@ -22,6 +29,7 @@ const TRANSCRIPTS_COLLECTION = 'transcripts';
 // Save user profile
 export const saveUserProfile = async (userId, userData) => {
   try {
+    checkFirestore();
     const userRef = doc(db, USERS_COLLECTION, userId);
     await setDoc(userRef, {
       ...userData,
@@ -37,6 +45,7 @@ export const saveUserProfile = async (userId, userData) => {
 // Get user profile
 export const getUserProfile = async (userId) => {
   try {
+    checkFirestore();
     const userRef = doc(db, USERS_COLLECTION, userId);
     const userSnap = await getDoc(userRef);
     
@@ -54,6 +63,7 @@ export const getUserProfile = async (userId) => {
 // Save transcript to user's history
 export const saveTranscript = async (userId, transcriptData) => {
   try {
+    checkFirestore();
     const transcriptRef = doc(collection(db, USERS_COLLECTION, userId, TRANSCRIPTS_COLLECTION));
     await setDoc(transcriptRef, {
       ...transcriptData,
@@ -70,6 +80,7 @@ export const saveTranscript = async (userId, transcriptData) => {
 // Get user's transcript history
 export const getTranscriptHistory = async (userId, limitCount = 10) => {
   try {
+    checkFirestore();
     const transcriptsRef = collection(db, USERS_COLLECTION, userId, TRANSCRIPTS_COLLECTION);
     const q = query(
       transcriptsRef,
@@ -97,6 +108,7 @@ export const getTranscriptHistory = async (userId, limitCount = 10) => {
 // Get single transcript
 export const getTranscript = async (userId, transcriptId) => {
   try {
+    checkFirestore();
     const transcriptRef = doc(db, USERS_COLLECTION, userId, TRANSCRIPTS_COLLECTION, transcriptId);
     const transcriptSnap = await getDoc(transcriptRef);
     
@@ -120,6 +132,7 @@ export const getTranscript = async (userId, transcriptId) => {
 // Update transcript
 export const updateTranscript = async (userId, transcriptId, updates) => {
   try {
+    checkFirestore();
     const transcriptRef = doc(db, USERS_COLLECTION, userId, TRANSCRIPTS_COLLECTION, transcriptId);
     await updateDoc(transcriptRef, {
       ...updates,
@@ -135,6 +148,7 @@ export const updateTranscript = async (userId, transcriptId, updates) => {
 // Delete transcript
 export const deleteTranscript = async (userId, transcriptId) => {
   try {
+    checkFirestore();
     const transcriptRef = doc(db, USERS_COLLECTION, userId, TRANSCRIPTS_COLLECTION, transcriptId);
     await deleteDoc(transcriptRef);
     return { success: true };
@@ -147,6 +161,7 @@ export const deleteTranscript = async (userId, transcriptId) => {
 // Save user preferences
 export const saveUserPreferences = async (userId, preferences) => {
   try {
+    checkFirestore();
     const userRef = doc(db, USERS_COLLECTION, userId);
     await updateDoc(userRef, {
       preferences,

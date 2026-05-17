@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, LogIn } from 'lucide-react';
+import { Sparkles, LogIn, CheckSquare } from 'lucide-react';
 import ExportButton from '../Export/ExportButton';
 import UserMenu from '../Auth/UserMenu';
 import LoginModal from '../Auth/LoginModal';
@@ -10,6 +11,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const DashboardHeader = ({ transcript, summary, actionItems, onLoadTranscript }) => {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -18,31 +20,42 @@ const DashboardHeader = ({ transcript, summary, actionItems, onLoadTranscript })
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-primary-surface border-b border-accent-cyan/20 sticky top-0 z-30 backdrop-blur-sm bg-primary-surface/80"
+        className="bg-primary-surface/95 border-b border-white/10 sticky top-0 z-40 backdrop-blur-md overflow-visible"
       >
-        <div className="max-w-[1600px] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="max-w-[1920px] mx-auto px-8 py-5 overflow-visible">
+          <div className="flex items-center justify-between overflow-visible relative">
             {/* Logo and Title */}
             <div className="flex items-center gap-4">
               <motion.div
                 whileHover={{ rotate: 180 }}
                 transition={{ duration: 0.5 }}
-                className="p-2 bg-white rounded-lg"
+                className="p-3 bg-gradient-to-br from-accent-cyan to-accent-purple rounded-xl"
               >
-                <Sparkles className="w-6 h-6 text-primary-bg" />
+                <Sparkles className="w-7 h-7 text-white" />
               </motion.div>
               <div>
-                <h1 className="text-2xl font-bold text-white">
+                <h1 className="text-2xl font-bold text-text-primary">
                   AI Transcription Dashboard
                 </h1>
-                <p className="text-sm text-text-secondary">
+                <p className="text-sm text-text-muted">
                   Powered by IBM Watson & Advanced AI
                 </p>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+              {actionItems && actionItems.length > 0 && (
+                <Button
+                  onClick={() => navigate('/actions')}
+                  variant="secondary"
+                  size="sm"
+                  icon={CheckSquare}
+                >
+                  Actions ({actionItems.length})
+                </Button>
+              )}
+              
               <ExportButton
                 transcript={transcript}
                 summary={summary}

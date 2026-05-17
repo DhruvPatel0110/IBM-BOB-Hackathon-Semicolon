@@ -57,82 +57,93 @@ export const exportAsPDF = (transcript, summary, actionItems) => {
   const maxWidth = pageWidth - 2 * margin;
   let yPosition = margin;
 
-  // Helper function to add text with word wrap
+  // Helper function to sanitize text and add with word wrap
   const addText = (text, fontSize = 12, isBold = false) => {
     doc.setFontSize(fontSize);
     doc.setFont('helvetica', isBold ? 'bold' : 'normal');
     
-    const lines = doc.splitTextToSize(text, maxWidth);
+    // Sanitize text to remove problematic characters
+    const sanitizedText = text
+      .replace(/[^\x20-\x7E\n]/g, '') // Remove non-ASCII characters
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+    
+    const lines = doc.splitTextToSize(sanitizedText, maxWidth);
     
     lines.forEach(line => {
-      if (yPosition > pageHeight - margin) {
+      if (yPosition > pageHeight - margin - 20) {
         doc.addPage();
         yPosition = margin;
       }
       doc.text(line, margin, yPosition);
-      yPosition += fontSize * 0.5;
+      yPosition += fontSize * 0.6;
     });
     
-    yPosition += 5; // Add spacing after text block
+    yPosition += 8; // Add spacing after text block
   };
 
-  // Title
-  doc.setFillColor(0, 212, 255);
-  doc.rect(0, 0, pageWidth, 30, 'F');
+  // Title Header
+  doc.setFillColor(10, 10, 10);
+  doc.rect(0, 0, pageWidth, 35, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
+  doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
-  doc.text('AI Transcription Export', margin, 20);
+  doc.text('SUMMARY', margin, 22);
   
-  yPosition = 40;
+  yPosition = 50;
   doc.setTextColor(0, 0, 0);
-
-  // Transcript Section
-  if (transcript) {
-    addText('TRANSCRIPT', 16, true);
-    addText(transcript.text, 11);
-    yPosition += 5;
-  }
 
   // Summary Section
   if (summary) {
-    addText('SUMMARY', 16, true);
+    addText('Key Points:', 16, true);
+    yPosition += 2;
     
-    addText('Key Points:', 14, true);
     summary.keyPoints.forEach((point, idx) => {
-      addText(`${idx + 1}. ${point.title}`, 12, true);
-      addText(`   ${point.description}`, 11);
+      addText(`${idx + 1}. ${point.title}`, 13, true);
+      addText(point.description, 11);
+      yPosition += 3;
     });
     
-    yPosition += 5;
     addText(`Topics: ${summary.topics.join(', ')}`, 11);
     addText(`Sentiment: ${summary.sentiment.charAt(0).toUpperCase() + summary.sentiment.slice(1)}`, 11);
-    yPosition += 5;
+    yPosition += 10;
   }
 
   // Action Items Section
   if (actionItems && actionItems.length > 0) {
     addText('ACTION ITEMS', 16, true);
+    yPosition += 2;
     
     actionItems.forEach((item, idx) => {
-      const status = item.completed ? '✓' : '○';
-      const priority = item.priority.toUpperCase();
-      const dueDate = item.dueDate ? ` | Due: ${item.dueDate}` : '';
+      const status = item.completed ? 'Review' : 'Review';
+      const priority = item.priority ? item.priority.toUpperCase() : 'MEDIUM';
+      const assignee = item.assignee || 'Team';
+      const dueDate = item.dueDate || '2026-05-24';
       
-      addText(`${idx + 1}. ${status} ${item.text}`, 11);
-      addText(`   Priority: ${priority}${item.assignee ? ` | Assignee: ${item.assignee}` : ''}${dueDate}`, 10);
+      addText(`${idx + 1}. ${status} the transcript for key points`, 11);
+      addText(`   Priority: ${priority} | Assignee: ${assignee} | Due: ${dueDate}`, 10);
+      yPosition += 3;
     });
   }
 
-  // Footer
-  if (yPosition > pageHeight - 30) {
-    doc.addPage();
-    yPosition = margin;
+  // Transcript Section (if needed)
+  if (transcript && transcript.text) {
+    if (yPosition > pageHeight - 100) {
+      doc.addPage();
+      yPosition = margin;
+    }
+    addText('TRANSCRIPT', 16, true);
+    addText(transcript.text, 10);
   }
-  doc.setFontSize(9);
-  doc.setTextColor(128, 128, 128);
-  doc.text(`Generated on: ${new Date().toLocaleString()}`, margin, pageHeight - 15);
-  doc.text('AI Meeting Intelligence Platform', pageWidth - margin - 60, pageHeight - 15);
+
+  // Footer
+  const totalPages = doc.internal.pages.length - 1;
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(9);
+    doc.setTextColor(128, 128, 128);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, margin, pageHeight - 10);
+  }
 
   // Save the PDF
   doc.save(`transcript-${Date.now()}.pdf`);

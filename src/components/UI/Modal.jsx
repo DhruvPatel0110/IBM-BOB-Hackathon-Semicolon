@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
@@ -9,7 +10,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     xl: 'max-w-6xl'
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -19,17 +20,18 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999]"
+            style={{ position: 'fixed' }}
           />
           
           {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 overflow-y-auto" style={{ position: 'fixed' }}>
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className={`bg-primary-surface border border-white/30 rounded-xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-hidden relative`}
+              className={`bg-primary-surface border border-white/20 rounded-xl shadow-2xl w-full ${sizes[size]} my-8 relative`}
             >
               {/* Close Button */}
               <button
@@ -40,7 +42,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
               </button>
               
               {/* Content */}
-              <div className="overflow-y-auto max-h-[90vh] scrollbar-thin">
+              <div className="overflow-y-auto max-h-[calc(90vh-4rem)] scrollbar-thin">
                 {children}
               </div>
             </motion.div>
@@ -49,6 +51,11 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
       )}
     </AnimatePresence>
   );
+
+  // Render modal using portal to bypass parent stacking contexts
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : null;
 };
 
 export default Modal;

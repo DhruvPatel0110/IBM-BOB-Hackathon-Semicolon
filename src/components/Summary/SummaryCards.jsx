@@ -47,10 +47,10 @@ const SummaryCard = ({ point, index }) => {
           </div>
           
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-text-primary mb-2 break-words">
+            <h3 className="text-lg font-bold text-text-primary mb-2 break-words whitespace-normal">
               {point.title}
             </h3>
-            <p className="text-text-secondary leading-relaxed break-words">
+            <p className="text-text-secondary leading-relaxed break-words whitespace-normal overflow-wrap-anywhere">
               {point.description}
             </p>
           </div>
@@ -64,11 +64,9 @@ const SummaryCards = ({ summary, isLoading = false }) => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-accent-purple/10 rounded-lg">
-            <Sparkles className="w-6 h-6 text-accent-purple" />
-          </div>
-          <h2 className="text-xl font-bold text-gradient">AI Summary</h2>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-text-primary">AI Summary</h2>
+          <p className="text-sm text-text-secondary">Generating insights...</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -82,11 +80,9 @@ const SummaryCards = ({ summary, isLoading = false }) => {
   if (!summary) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-accent-purple/10 rounded-lg">
-            <Sparkles className="w-6 h-6 text-accent-purple" />
-          </div>
-          <h2 className="text-xl font-bold text-gradient">AI Summary</h2>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-text-primary">AI Summary</h2>
+          <p className="text-sm text-text-secondary">Key insights from your transcript</p>
         </div>
         <Card className="text-center py-12">
           <div className="p-4 bg-accent-purple/10 rounded-full inline-block mb-4">
@@ -106,17 +102,12 @@ const SummaryCards = ({ summary, isLoading = false }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-accent-purple/10 rounded-lg">
-            <Sparkles className="w-6 h-6 text-accent-purple" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gradient">AI Summary</h2>
-            <p className="text-sm text-text-secondary">
-              Key insights from your transcript
-            </p>
-          </div>
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h2 className="text-xl font-bold text-text-primary">AI Summary</h2>
+          <p className="text-sm text-text-secondary">
+            Key insights from your transcript
+          </p>
         </div>
       </div>
 

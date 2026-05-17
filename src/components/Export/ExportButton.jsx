@@ -87,9 +87,9 @@ const ExportButton = ({ transcript, summary, actionItems }) => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Export Data"
-        size="md"
+        size="lg"
       >
-        <div className="space-y-6">
+        <div className="p-6 space-y-6">
           {/* Content Selection */}
           <div>
             <h3 className="text-lg font-semibold text-text-primary mb-3">

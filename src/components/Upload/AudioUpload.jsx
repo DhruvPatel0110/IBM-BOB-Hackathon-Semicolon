@@ -78,12 +78,12 @@ const AudioUpload = ({ onFileUpload }) => {
   };
 
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-accent-cyan/10 rounded-lg">
+        <div className="p-3 bg-accent-cyan/10 rounded-lg">
           <Upload className="w-6 h-6 text-accent-cyan" />
         </div>
-        <h2 className="text-xl font-bold text-gradient">Upload Audio</h2>
+        <h2 className="text-xl font-bold text-text-primary">Upload Audio</h2>
       </div>
 
       {!uploadedFile ? (
@@ -92,10 +92,10 @@ const AudioUpload = ({ onFileUpload }) => {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           animate={{
-            borderColor: isDragging ? '#00d4ff' : 'rgba(0, 212, 255, 0.2)',
-            backgroundColor: isDragging ? 'rgba(0, 212, 255, 0.05)' : 'transparent'
+            borderColor: isDragging ? '#60a5fa' : 'rgba(96, 165, 250, 0.3)',
+            backgroundColor: isDragging ? 'rgba(96, 165, 250, 0.1)' : 'transparent'
           }}
-          className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all"
+          className="border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all flex-1 flex flex-col items-center justify-center"
           onClick={() => fileInputRef.current?.click()}
         >
           <input
@@ -129,8 +129,8 @@ const AudioUpload = ({ onFileUpload }) => {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-4"
         >
-          <div className="flex items-start gap-4 p-4 bg-primary-hover rounded-lg border border-accent-cyan/20">
-            <div className="p-2 bg-accent-cyan/10 rounded-lg">
+          <div className="flex items-start gap-4 p-5 bg-primary-hover rounded-lg border border-accent-cyan/30">
+            <div className="p-3 bg-accent-cyan/10 rounded-lg">
               <File className="w-6 h-6 text-accent-cyan" />
             </div>
             
