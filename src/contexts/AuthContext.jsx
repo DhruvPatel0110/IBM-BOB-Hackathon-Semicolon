@@ -1,6 +1,7 @@
-// Authentication Context - Using Local Storage
+// Authentication Context - Firebase Integration
 import { createContext, useContext, useState, useEffect } from 'react';
-import { getCurrentUserLocal } from '../services/localAuthService';
+import { onAuthChange } from '../services/authService';
+import { isFirebaseConfigured } from '../config/firebase';
 
 const AuthContext = createContext();
 
@@ -17,10 +18,24 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    const currentUser = getCurrentUserLocal();
-    setUser(currentUser);
-    setLoading(false);
+    // Listen to Firebase auth state changes
+    const unsubscribe = onAuthChange((firebaseUser) => {
+      if (firebaseUser) {
+        // Convert Firebase user to our user format
+        setUser({
+          id: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0],
+          photoURL: firebaseUser.photoURL,
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    // Cleanup subscription
+    return () => unsubscribe();
   }, []);
 
   const value = {

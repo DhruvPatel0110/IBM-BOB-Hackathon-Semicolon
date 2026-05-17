@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Download, FileText, FileJson, FileCode } from 'lucide-react';
 import Button from '../UI/Button';
 import Modal from '../UI/Modal';
-import { exportAsText, exportAsJSON, exportAsMarkdown } from '../../utils/exportHelpers';
+import { exportAsText, exportAsPDF, exportAsJSON, exportAsMarkdown } from '../../utils/exportHelpers';
 
 const ExportButton = ({ transcript, summary, actionItems }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,10 +14,19 @@ const ExportButton = ({ transcript, summary, actionItems }) => {
 
   const exportFormats = [
     {
+      id: 'pdf',
+      name: 'PDF Document',
+      description: 'Professional PDF format (.pdf)',
+      icon: FileText,
+      color: 'text-status-error',
+      handler: exportAsPDF
+    },
+    {
       id: 'txt',
       name: 'Text File',
       description: 'Plain text format (.txt)',
       icon: FileText,
+      color: 'text-accent-cyan',
       handler: exportAsText
     },
     {
@@ -25,6 +34,7 @@ const ExportButton = ({ transcript, summary, actionItems }) => {
       name: 'JSON',
       description: 'Structured data format (.json)',
       icon: FileJson,
+      color: 'text-accent-purple',
       handler: exportAsJSON
     },
     {
@@ -32,6 +42,7 @@ const ExportButton = ({ transcript, summary, actionItems }) => {
       name: 'Markdown',
       description: 'Markdown format (.md)',
       icon: FileCode,
+      color: 'text-accent-pink',
       handler: exportAsMarkdown
     }
   ];
@@ -130,8 +141,8 @@ const ExportButton = ({ transcript, summary, actionItems }) => {
                     onClick={() => handleExport(format)}
                     className="flex items-start gap-4 p-4 rounded-lg border border-accent-cyan/20 hover:border-accent-cyan hover:bg-accent-cyan/5 transition-all text-left group"
                   >
-                    <div className="p-2 bg-accent-cyan/10 rounded-lg group-hover:bg-accent-cyan/20 transition-colors">
-                      <Icon className="w-6 h-6 text-accent-cyan" />
+                    <div className={`p-2 bg-accent-cyan/10 rounded-lg group-hover:bg-accent-cyan/20 transition-colors`}>
+                      <Icon className={`w-6 h-6 ${format.color}`} />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-text-primary mb-1">

@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { MessageSquare } from 'lucide-react';
 import DashboardHeader from './DashboardHeader';
 import AudioUpload from '../Upload/AudioUpload';
 import TranscriptViewer from '../Transcript/TranscriptViewer';
 import SummaryCards from '../Summary/SummaryCards';
 import ActionItemsPanel from '../ActionItems/ActionItemsPanel';
+import ChatInterface from '../Chatbot/ChatInterface';
 import { transcribeAudio, formatDuration, countWords } from '../../services/groqService';
 import { generateSummaryAndActions } from '../../services/geminiService';
+import { saveTranscript } from '../../services/firestoreService';
 import { useAuth } from '../../contexts/AuthContext';
+import { isFirebaseConfigured } from '../../config/firebase';
 
 const DashboardLayout = () => {
   const { user } = useAuth();
@@ -16,8 +20,10 @@ const DashboardLayout = () => {
   const [error, setError] = useState(null);
   
   const [transcript, setTranscript] = useState(null);
+  const [transcriptId, setTranscriptId] = useState(null);
   const [summary, setSummary] = useState(null);
   const [actionItems, setActionItems] = useState(null);
+  const [showChatbot, setShowChatbot] = useState(false);
 
   const handleFileUpload = async (file) => {
     setUploadedFile(file);
@@ -61,18 +67,24 @@ const DashboardLayout = () => {
       
       console.log('✅ Summary and action items generated!');
       
-      // Step 3: Save to localStorage if user is authenticated
-      if (user) {
-        console.log('💾 Saving transcript to local storage...');
-        const transcripts = JSON.parse(localStorage.getItem('user_transcripts') || '[]');
-        transcripts.push({
+      // Step 3: Save to Firestore if user is authenticated and Firebase is configured
+      if (user && isFirebaseConfigured) {
+        console.log('💾 Saving transcript to Firestore...');
+        const result = await saveTranscript(user.uid, {
           ...transcriptData,
+          transcript: transcriptionResult.text,
           summary: summaryData,
           actionItems: summaryResult.actionItems,
-          userId: user.id,
         });
-        localStorage.setItem('user_transcripts', JSON.stringify(transcripts));
-        console.log('✅ Transcript saved to local storage!');
+        
+        if (result.success) {
+          console.log('✅ Transcript saved to Firestore!');
+          setTranscriptId(result.id);
+        } else {
+          console.error('❌ Failed to save to Firestore:', result.error);
+        }
+      } else if (user && !isFirebaseConfigured) {
+        console.warn('⚠️ Firebase not configured. Transcript not saved to cloud.');
       }
       
       setIsLoading(false);
@@ -100,6 +112,8 @@ const DashboardLayout = () => {
       language: savedTranscript.language,
     });
     
+    setTranscriptId(savedTranscript.id);
+    
     if (savedTranscript.summary) {
       setSummary(savedTranscript.summary);
     }
@@ -118,23 +132,23 @@ const DashboardLayout = () => {
         onLoadTranscript={handleLoadTranscript}
       />
 
-      <main className="max-w-[1600px] mx-auto px-6 py-8">
-        {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column - Upload & Action Items */}
+      <main className="max-w-[1800px] mx-auto px-6 py-8">
+        {/* Main Grid Layout - 4 equal columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+          {/* Left Column - Upload & Action Items (30% width = 3/10) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             className="lg:col-span-3 space-y-6"
           >
-            {/* Upload Section */}
-            <div className="h-[400px]">
+            {/* Upload Section - 50% height */}
+            <div className="h-[calc(50vh-80px)] min-h-[350px]">
               <AudioUpload onFileUpload={handleFileUpload} />
             </div>
 
-            {/* Action Items Panel */}
-            <div className="h-[calc(100vh-500px)] min-h-[400px]">
+            {/* Action Items Panel - 50% height */}
+            <div className="h-[calc(50vh-80px)] min-h-[350px]">
               <ActionItemsPanel
                 actionItems={actionItems}
                 isLoading={isLoading}
@@ -142,14 +156,14 @@ const DashboardLayout = () => {
             </div>
           </motion.div>
 
-          {/* Center Column - Transcript */}
+          {/* Center Column - Transcript (30% width = 3/10, 100% height) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="lg:col-span-5"
+            className="lg:col-span-3"
           >
-            <div className="h-[calc(100vh-140px)] min-h-[600px]">
+            <div className="h-[calc(100vh-140px)] min-h-[750px]">
               <TranscriptViewer
                 transcript={transcript}
                 isLoading={isLoading}
@@ -157,18 +171,52 @@ const DashboardLayout = () => {
             </div>
           </motion.div>
 
-          {/* Right Column - Summary */}
+          {/* Right Column - Summary or Chatbot (40% width = 4/10, 100% height) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:col-span-4"
           >
-            <div className="h-[calc(100vh-140px)] min-h-[600px] overflow-y-auto scrollbar-thin">
-              <SummaryCards
-                summary={summary}
-                isLoading={isLoading}
-              />
+            {/* Toggle Button */}
+            {transcript && transcriptId && (
+              <div className="mb-4 flex gap-2">
+                <button
+                  onClick={() => setShowChatbot(false)}
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
+                    !showChatbot
+                      ? 'bg-gradient-to-br from-cyan-500/20 to-purple-500/20 text-white border border-cyan-500/30'
+                      : 'bg-gray-800/30 text-gray-400 hover:bg-gray-800/50'
+                  }`}
+                >
+                  Summary
+                </button>
+                <button
+                  onClick={() => setShowChatbot(true)}
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+                    showChatbot
+                      ? 'bg-gradient-to-br from-cyan-500/20 to-purple-500/20 text-white border border-cyan-500/30'
+                      : 'bg-gray-800/30 text-gray-400 hover:bg-gray-800/50'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Q&A Chat
+                </button>
+              </div>
+            )}
+
+            <div className="h-[calc(100vh-200px)] min-h-[750px] overflow-y-auto scrollbar-thin">
+              {showChatbot && transcript && transcriptId ? (
+                <ChatInterface
+                  transcript={transcript.text}
+                  transcriptId={transcriptId}
+                />
+              ) : (
+                <SummaryCards
+                  summary={summary}
+                  isLoading={isLoading}
+                />
+              )}
             </div>
           </motion.div>
         </div>
