@@ -7,8 +7,10 @@ import SummaryCards from '../Summary/SummaryCards';
 import ActionItemsPanel from '../ActionItems/ActionItemsPanel';
 import { transcribeAudio, formatDuration, countWords } from '../../services/groqService';
 import { generateSummaryAndActions } from '../../services/geminiService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const DashboardLayout = () => {
+  const { user } = useAuth();
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -47,16 +49,32 @@ const DashboardLayout = () => {
       const summaryResult = await generateSummaryAndActions(transcriptionResult.text);
       
       // Set summary data
-      setSummary({
+      const summaryData = {
         keyPoints: summaryResult.keyPoints,
         sentiment: summaryResult.sentiment,
         topics: summaryResult.topics,
-      });
+      };
+      setSummary(summaryData);
       
       // Set action items
       setActionItems(summaryResult.actionItems);
       
       console.log('✅ Summary and action items generated!');
+      
+      // Step 3: Save to localStorage if user is authenticated
+      if (user) {
+        console.log('💾 Saving transcript to local storage...');
+        const transcripts = JSON.parse(localStorage.getItem('user_transcripts') || '[]');
+        transcripts.push({
+          ...transcriptData,
+          summary: summaryData,
+          actionItems: summaryResult.actionItems,
+          userId: user.id,
+        });
+        localStorage.setItem('user_transcripts', JSON.stringify(transcripts));
+        console.log('✅ Transcript saved to local storage!');
+      }
+      
       setIsLoading(false);
       
     } catch (err) {
@@ -69,12 +87,35 @@ const DashboardLayout = () => {
     }
   };
 
+  const handleLoadTranscript = (savedTranscript) => {
+    // Load a saved transcript from history
+    setTranscript({
+      id: savedTranscript.id,
+      filename: savedTranscript.filename,
+      duration: savedTranscript.duration,
+      uploadDate: savedTranscript.uploadDate,
+      status: savedTranscript.status,
+      text: savedTranscript.text,
+      wordCount: savedTranscript.wordCount,
+      language: savedTranscript.language,
+    });
+    
+    if (savedTranscript.summary) {
+      setSummary(savedTranscript.summary);
+    }
+    
+    if (savedTranscript.actionItems) {
+      setActionItems(savedTranscript.actionItems);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-primary-bg">
       <DashboardHeader
         transcript={transcript}
         summary={summary}
         actionItems={actionItems}
+        onLoadTranscript={handleLoadTranscript}
       />
 
       <main className="max-w-[1600px] mx-auto px-6 py-8">

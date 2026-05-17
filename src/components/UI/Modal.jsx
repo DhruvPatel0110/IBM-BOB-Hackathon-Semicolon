@@ -29,21 +29,18 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className={`bg-primary-surface border border-white/30 rounded-xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-hidden`}
+              className={`bg-primary-surface border border-white/30 rounded-xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-hidden relative`}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-white/20">
-                <h2 className="text-2xl font-bold text-white">{title}</h2>
-                <button
-                  onClick={onClose}
-                  className="text-text-secondary hover:text-text-primary transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
+              {/* Close Button */}
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 z-10 p-2 text-text-secondary hover:text-text-primary hover:bg-primary-hover rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
               
               {/* Content */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)] scrollbar-thin">
+              <div className="overflow-y-auto max-h-[90vh] scrollbar-thin">
                 {children}
               </div>
             </motion.div>
